@@ -1,0 +1,93 @@
+
+%---------------Creating the .dat file------------------
+y = imread('panda.jpg');  % 3-dimensional image (u, w, 3)
+yy = rgb2gray(y);  % 2D image [u, w] (384 x 512) - this is the size of peppers.png image
+ImLowR = imresize(yy, 0.25);  % The size is reduced 4 times to 96x128
+
+% Get the dimensions of the image
+[rows, cols] = size(ImLowR);  % No need to track channels as it's a grayscale image
+
+% Reshape the image into a 1D array
+im_data = reshape(ImLowR, rows * cols, 1);  % Reshape to a 1D array
+
+% Open a file for writing
+fileID = fopen('imginput.dat', 'w');
+
+% Write the pixel values to the file
+fprintf(fileID, '%d\n', im_data.');
+
+% Close the file
+fclose(fileID);
+
+%-----------------Converting image to Grayscale---------------------
+% Read the data from the file
+fid = fopen('imginput.dat', 'r');
+data = fscanf(fid, '%d');
+fclose(fid);
+% Reshape the data into a 128x255 matrix
+image_data = reshape(data, 128, 255);
+%Take the transpose of the image
+TransposeIm_Mod = image_data';
+% Display the image
+imshow(image_data, [])
+title('Black/White Image');
+
+
+%------------------Converting decimal .dat file to hex--------------------
+% Specify the path to your .dat file
+file_path = 'imginput.dat';
+
+% Open the .dat file for reading
+fileID = fopen(file_path, 'r');
+
+% Check if the file was opened successfully
+if fileID == -1
+    error('Failed to open the file.');
+end
+
+% Read decimal values from the file
+decimal_values = fscanf(fileID, '%d');
+
+% Close the file
+fclose(fileID);
+
+% Convert decimal values to hexadecimal
+hex_values = dec2hex(decimal_values);
+
+% Specify the path for the new .dat file to save the hex values
+output_file_path = 'imginput_hex.dat';
+
+% Open the new file for writing
+output_fileID = fopen(output_file_path, 'w');
+
+% Check if the file was opened successfully
+if output_fileID == -1
+    error('Failed to open the output file.');
+end
+
+% Write each hexadecimal value on a new line
+for i = 1:length(hex_values)
+    fprintf(output_fileID, '%s\n', hex_values(i, :));
+end
+
+% Close the new file
+fclose(output_fileID);
+
+%----------------Calculating the Max Count of the Histogram-----------------
+% Read the data from the file
+fid = fopen('imginput_hex.dat', 'r');
+data = fscanf(fid, '%x');
+fclose(fid);
+
+% Calculate and display the histogram of the data with 128 bins
+figure;
+hist(data, 128); % You can adjust the number of bins as needed
+title('Histogram for Panda');
+
+% Calculate the median of the data
+imgmedian = median(data);
+
+% Calculate the maximum count (mode) of the data
+[counts, bins] = hist(data, unique(data));
+[~, mode_index] = max(counts);
+mode_value = bins(mode_index);
